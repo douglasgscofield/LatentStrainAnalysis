@@ -2,6 +2,8 @@
 
 import sys,getopt,os
 
+LSFScripts_dir = os.getenv('LSFScripts', 'LSFScripts')
+
 SplitInput_string = """#!/bin/bash
 #BSUB -J SplitInput[1-%numSamples%]
 #BSUB -o Logs/SplitInput-Out-%I.out
@@ -9,9 +11,10 @@ SplitInput_string = """#!/bin/bash
 #BSUB -q week
 #BSUB -W 23:58
 echo Date: `date`
+LSFScripts=${LSFScripts:-LSFScripts}
 t1=`date +%s`
 sleep ${LSB_JOBINDEX}
-python LSFScripts/array_merge.py -r ${LSB_JOBINDEX} -i %input% -o original_reads/
+python $LSFScripts/array_merge.py -r ${LSB_JOBINDEX} -i %input% -o original_reads/
 [ $? -eq 0 ] || echo 'JOB FAILURE: $?'
 echo Date: `date`
 t2=`date +%s`
@@ -38,6 +41,6 @@ if __name__ == "__main__":
 			n = arg
 	for dir in ['Logs','original_reads','hashed_reads','cluster_vectors','read_partitions']:
 		os.system('mkdir %s' % (dir))
-	f = open('LSFScripts/SplitInput_ArrayJob.q','w')
+	f = open(LSFScripts_dir+'/SplitInput_ArrayJob.q','w')
 	f.write(SplitInput_string.replace('%numSamples%',n).replace('%input%',inputdir))
 	f.close()
